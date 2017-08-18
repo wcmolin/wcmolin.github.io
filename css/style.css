@@ -27,8 +27,7 @@ body {
 }
 ol,
 ul,
-form,
-p {
+form {
   margin: 0;
 }
 a {
@@ -526,27 +525,27 @@ h2.article-head {
 }
 .markdown-content h2,
 .article-summary h2 {
+  margin: 1em 0;
   font-size: 1.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #e5e5e5;
 }
 .markdown-content h3,
 .article-summary h3 {
   margin: 1em 0;
   font-size: 1.3em;
-  padding-bottom: 0.3em;
-  border-bottom: 1px solid #e5e5e5;
 }
-.markdown-content h4,
-.article-summary h4 {
-  margin: 1em 0;
-  font-size: 1.2em;
-}
-.markdown-content h4:before,
-.article-summary h4:before {
+.markdown-content h3:before,
+.article-summary h3:before {
   content: "#";
   color: #42b983;
   margin-right: 5px;
   font-size: 1.2em;
   font-weight: 700;
+}
+.markdown-content h4,
+.article-summary h4 {
+  font-size: 1.2em;
 }
 .markdown-content h5,
 .article-summary h5 {

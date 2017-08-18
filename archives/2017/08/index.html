@@ -7,7 +7,7 @@
   <meta name="keyword" content="hexo-theme, vuejs">
   <title>
     
-      Tags | Let it be
+      Let it be
     
   </title>
   <link rel="shortcut icon" href="/css/images/fav.ico">
@@ -107,61 +107,50 @@
 </header>
 
     <div id="article-banner">
-  <h2>Tags</h2>
-  <p class="post-date">标签检索</p>
+  <h2>Archives</h2>
+  <p class="post-date">文章归档</p>
 </div>
-<main class="app-body">
-  <div id="tag-cloud">
+<main class="app-body" id="archives">
+  
+  
+  
+    <section class="time-section">
+  <h1 class="section-year">
+    2017
+  </h1>
+  <div class="section-list">
     
-      <a class="tag2" data-name="tag-spring">spring</a>
     
-      <a class="tag3" data-name="tag-伪文青">伪文青</a>
+      <div class="section-list-item">
+        <a href="/2017/08/14/OAuth2开发者指南/" class="archive-title">OAuth2开发者指南</a>
+        <p class="archive-date">08-14</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2017/07/20/hello-world/" class="archive-title">Hello World</a>
+        <p class="archive-date">07-20</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2017/07/19/spring_in_action学习-第二章/" class="archive-title">spring in action学习-第二章</a>
+        <p class="archive-date">07-19</p>
+      </div>
+    
+      <div class="section-list-item">
+        <a href="/2017/07/17/Life-Motto/" class="archive-title">Life Motto</a>
+        <p class="archive-date">07-17</p>
+      </div>
     
   </div>
+</section>
   
-    <div class="tag-list">
-      <h3 class="tag-name" id="tag-spring">spring</h3>
-      
-        <ul class="tag-preview">
-          <li>
-            <a href="/2017/08/14/OAuth2开发者指南/">OAuth2开发者指南</a>
-          </li>
-        </ul>
-        
-        <ul class="tag-preview">
-          <li>
-            <a href="/2017/07/19/spring_in_action学习-第二章/">spring in action学习-第二章</a>
-          </li>
-        </ul>
-        
-    </div>
-    
-    <div class="tag-list">
-      <h3 class="tag-name" id="tag-伪文青">伪文青</h3>
-      
-        <ul class="tag-preview">
-          <li>
-            <a href="/2017/07/17/Life-Motto/">Life Motto</a>
-          </li>
-        </ul>
-        
-    </div>
-    
 </main>
 
 <script>
   (function () {
-    var url = 'http://yoursite.com/tags/index.html'
-    $('#article-banner').geopattern(url)
-    $('.header').removeClass('fixed-header')
-
-    var tag = location.hash.replace('#', '')
-    if (tag) {
-      var tagId = "#tag-" + tag;
-      $("html, body").animate({
-        scrollTop: $(tagId).offset().top 
-      }, 400)
-    }
+    var url = 'http://yoursite.com/archives/2017/08/index.html';
+    $('#article-banner').geopattern(url);
+    $('.header').removeClass('fixed-header');
   })();
 </script>
     <div class="scroll-top">
