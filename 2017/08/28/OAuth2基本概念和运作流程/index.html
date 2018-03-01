@@ -138,7 +138,7 @@
 <li><code>Resource server</code>：资源服务器，即服务提供商存放用户生成的资源的服务器。它与认证服务器，可以是同一台服务器，也可以是不同的服务器。</li>
 <li><code>Access Token</code>：访问令牌。使用合法的访问令牌获取受保护的资源。</li>
 </ul>
-<h3 id="运行流程"><a href="#运行流程" class="headerlink" title="运行流程"></a>运行流程</h3><p><img src="http://image.beekka.com/blog/2014/bg2014051203.png" alt="运行流程"></p>
+<h3 id="运行流程"><a href="#运行流程" class="headerlink" title="运行流程"></a>运行流程</h3><p><img src="http://www.ruanyifeng.com/blogimg/asset/2014/bg2014051203.png" alt="运行流程"></p>
 <ul>
 <li>（A）客户端向资源所有者请求授权。授权请求可以直接对资源所有者(如图所示)进行，或者通过授权服务器作为中介进行间接访问（首选方案）。</li>
 <li>（B）资源所有者允许授权，并返回凭证（如<code>code</code>）。</li>
@@ -155,7 +155,7 @@
 <li>客户端模式（<code>client credentials</code>）</li>
 </ul>
 <h4 id="授权码模式（authorization-code）"><a href="#授权码模式（authorization-code）" class="headerlink" title="授权码模式（authorization code）"></a>授权码模式（<code>authorization code</code>）</h4><p>授权码模式是功能最完整、使用最广泛、流程最严密的授权模式。</p>
-<p>由于这是一个基于重定向的流，所以客户端必须能够与资源所有者的用户代理(通常是web浏览器)进行交互，并且能够从授权服务器接收传入的请求(通过重定向)。<br><img src="http://image.beekka.com/blog/2014/bg2014051204.png" alt="授权码模式"></p>
+<p>由于这是一个基于重定向的流，所以客户端必须能够与资源所有者的用户代理(通常是web浏览器)进行交互，并且能够从授权服务器接收传入的请求(通过重定向)。<br><img src="http://www.ruanyifeng.com/blogimg/asset/2014/bg2014051204.png" alt="授权码模式"></p>
 <ul>
 <li>（A）用户访问客户端，客户端将用户导向授权服务器，通过用户代理（<code>User-Agent</code>）发送包括它的客户端标识符、请求的范围、本地状态和一个重定向URI，授权服务器在授予(或拒绝)访问权后将其发送给用户代理。</li>
 <li>（B）授权服务器对资源所有者进行身份验证(通过用户代理)，并确定资源所有者是否授予或拒绝客户端的访问请求。</li>
