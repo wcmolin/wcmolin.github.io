@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="若要前行，就要离开你现在停留的地方">
+  <meta name="keyword" content="hexo-theme, vuejs">
+  <title>
+    
+      OAuth2开发者指南—服务端 | Let it be
+    
+  </title>
+  <link rel="shortcut icon" href="/css/images/fav.ico">
+  <link rel="icon" href="/css/images/fav.ico">
+  <link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/plugins/gitment.css">
+  <script src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdn.bootcss.com/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.js"></script>
+  <script src="/js/qrious.js"></script>
+<script src="/js/gitment.js"></script>
+</head>
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>Let it be</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/project/" class="item-link">Projects</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">About</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/project/" class="menu-link">Projects</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">About</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>OAuth2开发者指南—服务端</h2>
+  <p class="post-date">2017-08-29</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body">
+  <article class="post-article">
+    <section class="markdown-content"><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>这是一份关于<a href="https://tools.ietf.org/html/draft-ietf-oauth-v2" target="_blank" rel="external"><code>OAuth 2.0</code></a>的用户指南。对于OAuth 1.0来说，一切都是不同的，所以请看<a href="http://projects.spring.io/spring-security-oauth/docs/oauth1.html" target="_blank" rel="external">它的用户指南</a>。</p>
+<p>本指南分为两个部分，第一部分是OAuth 2.0服务端(OAuth 2.0 Provider)，第二部分是OAuth 2.0的客户端(OAuth 2.0 Client)。对于服务端和客户端来说，样本代码的最佳来源是<a href="https://github.com/spring-projects/spring-security-oauth/tree/master/tests" target="_blank" rel="external">集成测试</a>和<a href="https://github.com/spring-projects/spring-security-oauth/tree/master/samples/oauth2" target="_blank" rel="external">样例应用程序</a>。</p>
+<h2 id="OAuth-2-0-服务端"><a href="#OAuth-2-0-服务端" class="headerlink" title="OAuth 2.0 服务端"></a>OAuth 2.0 服务端</h2><p>OAuth 2.0服务端的用途是负责将OAuth 2.0的受保护资源暴露出去。该配置涉及到如何建立与OAuth 2.0客户端的联系，使得客户端可以独立或代表用户访问其受保护的资源。服务端通过管理和验证用于访问受保护资源的OAuth 2.0令牌来实现这一点。在适当的情况下，服务端还必须为用户提供一个接口，以确认客户端可以被授予访问受保护资源的访问权(即确认页面)。</p>
+<h2 id="OAuth-2-0-服务端实现"><a href="#OAuth-2-0-服务端实现" class="headerlink" title="OAuth 2.0 服务端实现"></a>OAuth 2.0 服务端实现</h2><p>在 OAuth 2.0中，服务端实际上是分成授权服务和资源服务两个角色的，虽然这两个角色有时是存在于同一个应用程序中。使用Spring Security OAuth，您可以选择在两个应用程序之间进行拆分，同时还可以拥有多个共享授权服务的资源服务。获取令牌(Tokens)的请求是由Spring MVC的控制器端点来处理的，访问受保护的资源是通过标准的Spring Security请求过滤器来处理的。为了实现OAuth 2.0授权服务器，在Spring Security 过滤器链中需要实现以下端点：</p>
+<ul>
+<li><code>AuthorizationEndpoint</code>是用于授权服务请求的。默认的URL是: <code>/oauth/authorize</code>。</li>
+<li><code>TokenEndpoint</code>是用于获取访问令牌(Access Tokens)的请求。 默认的URL是: <code>/oauth/token</code>。</li>
+</ul>
+<p>要实现OAuth 2.0资源服务器，需要以下过滤器:</p>
+<ul>
+<li><code>OAuth2AuthenticationProcessingFilter</code>这个过滤器是用于加载请求提供的一个授权了的访问令牌是否有效。</li>
+</ul>
+<p>对于所有的OAuth 2.0服务端的功能，通过使用Spring OAuth专门的<code>@Configuration</code>适配器来简化配置。也可以通过XML命名空间来配置OAuth，XML的schema存在：<a href="http://www.springframework.org/schema/security/spring-security-oauth2.xsd" target="_blank" rel="external">http://www.springframework.org/schema/security/spring-security-oauth2.xsd</a>。命令空间是<code>http://www.springframework.org/schema/security/oauth2</code>。</p>
+<h2 id="授权服务器配置"><a href="#授权服务器配置" class="headerlink" title="授权服务器配置"></a>授权服务器配置</h2><p>配置授权服务器时，您必须考虑的grant类型，从终端用户那，客户端会使用获取到的访问令牌(如授权代码、用户凭证、刷新令牌)。服务器的配置是用于提供一些实现，像客户端细节服务和令牌服务全局机制上启用或禁用某些方面。但是，请注意，每个客户端可以专门配置权限能够使用某些授权机制和访问授权。也就是说，仅仅因为您的服务端被配置为支持<code>客户凭证</code>(client credentials)<code>授予类型</code>(grant type)，并不意味着某个特定的客户端被授权使用这种类型的授权类型。</p>
+<p><code>@EnableAuthorizationServer</code>注释用于配置OAuth 2.0 授权服务器机制。加上任意一个<code>@Beans</code>去实现<code>AuthorizationServerConfigurer</code> (这是一个实现了空方法的简单适配器)。以下功能委托给由spring创造的独立configurers而且传递到<code>AuthorizationServerConfigurer</code>：</p>
+<ul>
+<li><code>ClientDetailsServiceConfigurer</code>定义客户详细信息服务的配置器。客户端详细信息可以被初始化，或者您可以直接引用一个现有的存储。</li>
+<li><code>AuthorizationServerSecurityConfigurer</code>定义令牌端点上的安全约束。</li>
+<li><code>AuthorizationServerEndpointsConfigurer</code>定义授权和令牌端点和令牌服务。</li>
+</ul>
+<p>服务端配置的一个重要方面是将授权代码提供给OAuth客户端(在授权码模式中)。OAuth客户端通过将终端用户导向一个可以输入证书/口令的授权验证页面来获取授权码，然后，将授权码传递给服务端授权服务器，服务器验证后重定向页面。在OAuth 2说明文档中有详细的示例。</p>
+<p>在xml配置文件中，可以使用<code>&lt;authorization-server/&gt;</code>节点配置OAuth 2.0授权服务器。</p>
+<h3 id="配置客户端详细信息"><a href="#配置客户端详细信息" class="headerlink" title="配置客户端详细信息"></a>配置客户端详细信息</h3><p><code>ClientDetailsServiceConfigurer</code> 类（<code>AuthorizationServerConfigurer</code>类中的一个调用类）可以用来定义一个基于内存的或者JDBC的客户端信息服务。客户端的重要属性如下：</p>
+<ul>
+<li><code>clientId</code>: (必须)客户端ID</li>
+<li><code>secret</code>: (对于可信任的客户端是必须的)客户端的私钥。如果有的话。</li>
+<li><code>scope</code>: 客户端受限制的范围。如果范围是未定义的或者是空的(默认值)，客户端不受范围的限制。</li>
+<li><code>authorizedGrantTypes</code>: 授权给客户端使用的权限类型。默认值为空。</li>
+<li><code>authorities</code>: 授权给客户端的权限(合格的Spring安全权限)。</li>
+</ul>
+<p>客户端详细信息可以通过直接访问底层存储(例如<code>JdbcClientDetailsService</code>的数据库表)或通过实现<code>ClientDetailsManager</code>接口(也可以实现<code>ClientDetailsService</code>接口，或者实现两个接口)，从而在运行的应用程序中进行更新。</p>
+<h3 id="管理令牌"><a href="#管理令牌" class="headerlink" title="管理令牌"></a>管理令牌</h3><p><code>AuthorizationServerTokenServices</code>接口里定义了管理OAuth 2.0令牌的必要操作。注意以下几点：</p>
+<ul>
+<li>当创建访问令牌时，必须存储身份验证，以便接受访问令牌的资源稍后可以引用它。</li>
+<li>访问令牌用于加载创建令牌时的授权信息。</li>
+</ul>
+<p>在创建您的<code>AuthorizationServerTokenServices</code> 接口的实现时，你可以考虑使用<code>DefaultTokenServices</code> 类，它有许多可以插入的策略，以更改访问令牌的格式和存储。它使用随机值创建令牌，并处理除永久令牌以外的所有令牌，对于永久令牌，它委托<code>TokenStore</code>类进行处理。令牌默认采用<a href="http://docs.spring.io/spring-security/oauth/apidocs/org/springframework/security/oauth2/provider/token/store/InMemoryTokenStore.html" target="_blank" rel="external">基于内存实现的存储方式</a>，但也有一些其它的存储方式。下面是其中一些方式的简介：</p>
+<ul>
+<li>默认的<code>InMemoryTokenStore</code>处理类对于单服务器场景非常适用（优点有：低阻塞，宕机时无需热切换到备份服务器）。大部分项目可以在开始时或者在开发模式下使用这种方式，这样比较容易启动一个没有其它依赖的服务器。</li>
+<li><code>JdbcTokenStore</code>类是实现存储令牌的<a href="http://projects.spring.io/spring-security-oauth/docs/JdbcTokenStore" target="_blank" rel="external">JDBC版本</a>，它将令牌信息保存到关系型数据库中。如果服务器间共享数据库或者同一个服务器有多个实例或者授权服务器、资源服务器有多个组件，那么可以使用JDBC方式存储令牌。使用<code>JdbcTokenStore</code>类时，需要将spring-jdbc组件jar包添加到工程的编译路径中。</li>
+<li>该存储的<a href="http://projects.spring.io/spring-security-oauth/docs/%60JwtTokenStore%60" target="_blank" rel="external"><code>JSON Web Token(JWT)</code></a>版本将所有关于授权的数据都编码到令牌本身(因此，没有任何后端存储，这是一个显著的优势)。一个缺点是不能很容易地撤销访问令牌，所以它们通常都是在短时间内被授予的，而撤销则在刷新令牌中处理。另一个缺点是，如果您在其中存储大量的用户凭证信息，令牌可能会变得非常大。<code>JwtTokenStore</code>不是一个真正的存储类，因为它不保存任何数据，但是它在传输令牌信息和授权信息方面扮演着同样的角色(在<code>DefaultTokenServices</code>类中实现)。</li>
+</ul>
+<blockquote>
+<p>注意：JDBC服务的模式并不是与库一起打包的(因为在实践中您可能希望使用较多的变体)，但是您可以从github的测试代码中获得一个<a href="https://github.com/spring-projects/spring-security-oauth/blob/master/spring-security-oauth2/src/test/resources/schema.sql" target="_blank" rel="external">示例</a>。一定要使用<code>@EnableTransactionManagement</code>注解防止客户端应用程序之间的冲突竞争相同的行创建令牌。还要注意，样例模式有显式的主键声明——在并发环境中也是必需的。</p>
+</blockquote>
+<h3 id="JWT令牌"><a href="#JWT令牌" class="headerlink" title="JWT令牌"></a>JWT令牌</h3><p>要使用JWT令牌，您需要在授权服务器中使用<code>JwtTokenStore</code>，资源服务器还需要能够对令牌进行解码，<code>JwtTokenStore(接口)</code>依赖于<code>JwtAccessTokenConverter</code>类，并且授权服务器和资源服务器都需要相同的实现。令牌以默认方式进行签名，资源服务器为了能够验证这些签名，它需要有与授权服务器相同的对称密钥(服务器共享对称密钥)。或者它需要有可以匹配签名私钥的公钥(公有私有密钥或混合密钥)。公共密钥(如果可用)在<code>/oauth/token_key</code>密钥端点上的授权服务器公开，缺省情况下，使用访问规则”denyAll()”是安全的。你可以打开它通过注入一个SpEL表达式<code>AuthorizationServerSecurityConfigurer</code>(例如”permitAll()”因为它是一个公开的密钥，所以它可能已经足够了)。</p>
+<p>为了使用<code>JwtTokenStore</code>类，你需要在工程编译路径下添加<code>spring-security-jwt</code>组件jar包(你可以在SpringOAuth的github资源库中找到，但是两者的版本号是不一致的)。</p>
+<h3 id="认证-grant-类型"><a href="#认证-grant-类型" class="headerlink" title="认证(grant)类型"></a>认证(grant)类型</h3><p><code>AuthorizationEndpoint</code>通过<code>AuthorizationServerEndpointsConfigurer</code> 可以配置支持 grant 类型。默认情况下支持所有的 grant 类型，除了密码认证（有关如何切换的细节，请参阅下面的内容）。以下属性影响 grant 类型：</p>
+<ul>
+<li><code>authenticationManager</code>：通过注入的<code>AuthenticationManager</code>来开启密码认证。</li>
+<li><code>userDetailsService</code>：如果你注入<code>UserDetailsService</code>或者一个全局配置(例如<code>GlobalAuthenticationManagerConfigurer</code>)然后刷新令牌认证将包含一个检查用户详细信息的功能，以确保账户仍然活跃。</li>
+<li><code>authorizationCodeServices</code>：为了授权代码认证类型定义了授权代码服务（<code>AuthorizationCodeServices</code>的实例）。</li>
+<li><code>implicitGrantService</code>：在简单（隐式）认证类型中管理状态。</li>
+<li><code>tokenGranter</code>：<code>TokenGranter</code>（完全控制认证和忽略上面的其他属性）。</li>
+</ul>
+<p>在XML中 grant 类型包括<code>authorization-server</code>的子元素。</p>
+<h3 id="配置端点的URL"><a href="#配置端点的URL" class="headerlink" title="配置端点的URL"></a>配置端点的URL</h3><p>配置<code>AuthorizationServerEndpointsConfigurer</code>有一个<code>pathMapping()</code>方法。该方法有两个参数：</p>
+<ul>
+<li>默认的端点URL（框架实现）。</li>
+<li>自定义URL（从<code>&quot;/&quot;</code>开始）。</li>
+</ul>
+<p>框架提供的URL路径是<code>/oauth/authorize</code>（授权端），<code>/oauth/token</code>（令牌端），<code>/oauth/confirm_access</code>（用户发送确认授权到这里），<code>/oauth/error</code>（用户呈现授权服务器授权出错的请求），<code>/oauth/check_token</code>（被资源服务器用来解码访问令牌）， 还有<code>/oauth/token_key</code>（如果使用JWT令牌，将公开用于令牌验证的公钥）。</p>
+<p>授权端<code>/oauth/authorize</code>（或其映射的备选方案）应该是受Spring Security保护的，以便仅对经过身份验证的用户进行访问。例如，使用标准的Spring Security <code>WebSecurityConfigurer</code>：</p>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="variable">@Override</span></div><div class="line">protected void configure(HttpSecurity http) throws Exception &#123;</div><div class="line">    <span class="selector-tag">http</span></div><div class="line">        <span class="selector-class">.authorizeRequests</span>()<span class="selector-class">.antMatchers</span>(<span class="string">"/login"</span>)<span class="selector-class">.permitAll</span>()<span class="selector-class">.and</span>()</div><div class="line">    <span class="comment">// default protection for all resources (including /oauth/authorize)</span></div><div class="line">        <span class="selector-class">.authorizeRequests</span>()</div><div class="line">            <span class="selector-class">.anyRequest</span>()<span class="selector-class">.hasRole</span>(<span class="string">"USER"</span>)</div><div class="line">    <span class="comment">// ... more configuration, e.g. for form login</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：如果您的授权服务器也是一个资源服务器，那么还有一个安全过滤器链，它具有较低的优先级控制API资源。对于那些受访问令牌保护的，在主要面向用户的过滤器链中不匹配的请求，您需要配置它们的路径。因此，请确保包含一个<code>request matcher</code>，它只在<code>WebSecurityConfigurer</code>中选择非api资源。</p>
+</blockquote>
+<p>在Spring OAuth的基于<code>@Configuration</code>注解的配置中，令牌端默认是使用<code>HTTP Basic</code>验证客户端的密钥的。这在XML中不是这样的（因此应该显式地保护它）。</p>
+<p>使用XML的<code>&lt;authorization-server/&gt;</code>元素可以使用一些属性来达到改变默认的端点URL。</p>
+<h2 id="自定义用户界面"><a href="#自定义用户界面" class="headerlink" title="自定义用户界面"></a>自定义用户界面</h2><p>大多数授权服务器端点主要由机器使用，但是有一些资源需要一个UI，这些资源是通过<code>/oauth/confirm_access</code>的GET请求，以及来自<code>/oauth/error</code>的HTML响应。它们在框架中使用 whitelabel 提供实现，因此大部分授权服务器应用实例都希望提供它们自己的功能，这样就可以控制样式和内容。您所需要做的就是为这些端点提供一个带有<code>@RequestMappings</code>的Spring MVC <strong>controller</strong>，并且该框架的默认值将在 <strong>dispatcher</strong> 中得到较低的优先级。<code>/oauth/confirm_access</code>端点，您可以预期一个<code>AuthorizationRequest</code>将被绑定到会话中，该请求将携带所有需要从用户获得批准的数据（可以从<code>WhitelabelApprovalEndpoint</code>复制一份作为起始代码）。您可以从该请求中获取所有数据，然后按照您喜欢的方式呈现它，然后所有用户需要做的就是向<code>/oauth/authorize</code> POST 关于批准或拒绝批准的信息。请求参数被直接传递到<code>UserApprovalHandler</code>的<code>UserApprovalHandler</code>，这样您就可以多多少少地解释数据了。默认<code>UserApprovalHandler</code>取决于你有提供一个<code>ApprovalStore</code>在 <code>AuthorizationServerEndpointsConfigurer</code>（在这种情况下,它是一个<code>ApprovalStoreUserApprovalHandler</code>）或没有（在这种情况下,它是一个<code>TokenStoreUserApprovalHandler</code>）。标准的 <strong>approval handlers</strong> 接受以下内容：</p>
+<ul>
+<li><code>TokenStoreUserApprovalHandler</code>：通过用户的简单<code>yes/no</code>决定，等于<code>&quot;true&quot;</code>或<code>&quot;false&quot;</code>。</li>
+<li><code>ApprovalStoreUserApprovalHandler</code>：一组范围（<code>scope.*</code>）。参数<code>&quot;*&quot;</code>表示与所请求的范围相等。参数值可以为<code>&quot;true&quot;</code>或者<code>&quot;approved&quot;</code>（如果用户批准认证），否则用户被认为拒绝了该范围。如果至少一个范围被批准，代表认证成功的。</li>
+</ul>
+<blockquote>
+<p>注意：不要忘记将CSRF保护包含在您为用户呈现的表单中。Spring Security在缺省情况下希望得到一个名为<code>&quot;csrf&quot;</code>的请求参数(它在 <strong>request attribute</strong> 中提供值)。有关这方面的更多信息，请参阅Spring Security用户指南，或者查看一下 <strong>whitelabel</strong> 的实现。</p>
+</blockquote>
+<h3 id="执行SSL"><a href="#执行SSL" class="headerlink" title="执行SSL"></a>执行SSL</h3><p>普通HTTP对测试来说足够了，但是在生产环境需要在授权服务器上使用SSL。您可以在一个安全的容器或代理后运行该应用程序，如果您正确地设置代理和容器(这与OAuth2无关)，那么它就可以正常工作。您可能还希望使用Spring Security <code>requiresChannel()</code>约束来保护端点。对于<code>/authorize</code> 端，您可以将其作为常规应用程序安全性的一部分来完成。对于<code>/token</code>端，在<code>AuthorizationServerEndpointsConfigurer</code>中你可以设置使用sslOnly()方法，改变标志位。在这两种情况下，安全通道设置都是可选的，但如果它检测到不安全通道上的请求，会导致Spring Security重定向到它认为是安全通道的安全通道。</p>
+<h2 id="自定义错误处理"><a href="#自定义错误处理" class="headerlink" title="自定义错误处理"></a>自定义错误处理</h2><p>在授权服务器上的错误处理使用标准的Spring MVC功能，即 <code>@ExceptionHandler</code> 端点本身的方法。用户还可以提供一个<code>WebResponseExceptionTranslator</code>端点本身，最好的办法是改变响应的内容而不是他们呈现的方式。对于令牌端和授权端中抛出的异常，OAuth的错误视图（<code>/oauth/error</code>）进行处理，异常的呈现委托给<code>HttpMesssageConverters</code>（可以添加到MVC配置中）。为HTML响应提供了whitelabel错误端点，但是用户可能需要提供一个自定义实现（例如，只需添加一个<code>@Controller</code>，它的请求映射是<code>@RequestMapping(&quot;/oauth/error&quot;)</code>）。    </p>
+<h3 id="将用户角色映射到Scopes"><a href="#将用户角色映射到Scopes" class="headerlink" title="将用户角色映射到Scopes"></a>将用户角色映射到Scopes</h3><p>有时，限制令牌的范围不仅限于分配给客户端的范围，而且还根据用户自己的权限来限制。如果您在<code>AuthorizationEndpoint</code>中使用<code>DefaultOAuth2RequestFactory</code>，您可以设置一个标志<code>checkUserScopes=true</code>来限制只允许范围匹配用户的角色。您也可以在<code>TokenEndpoint</code>注入一个<code>OAuth2RequestFactory</code>但是，如果您也安装一个<code>TokenEndpointAuthenticationFilter</code>-在<code>BasicAuthenticationFilter</code>之后添加这个过滤器，这仅适用与密码认证模式。当然，您也可以实现自己的规则，将范围映射到角色，并实现自己的<code>OAuth2RequestFactory</code>版本。如果你使用<code>@EnableAuthorizationServer</code>的话，<code>AuthorizationServerEndpointsConfigurer</code>允许您注入一个自定义的<code>OAuth2RequestFactory</code>，所以你可以使用这个功能来建立一个工厂。</p>
+<h2 id="资源服务器配置"><a href="#资源服务器配置" class="headerlink" title="资源服务器配置"></a>资源服务器配置</h2><p>资源服务器(可以与授权服务器在同一应用或是单独的应用程序)提供由OAuth2令牌保护的资源。Spring OAuth提供了一个实现该保护的<strong>Spring Security authentication filter</strong>。在<code>@Configuration类</code>中，你可以使用<code>@EnableResourceServer</code>来开启/关闭过滤器，使用<code>ResourceServerConfigurer</code>来配置它（必要时）。下面是可配置的属性：</p>
+<ul>
+<li><code>tokenServices</code>：定义令牌服务的实体。（<code>ResourceServerTokenServices</code>类的实例）</li>
+<li><code>resourceId</code>：资源的id（可选，推荐配置，如果存在的话，授权服务器将对它进行验证）。</li>
+<li>资源服务器的其它扩展点（例如用于从传入请求提取令牌的<code>tokenExtractor</code>）。</li>
+<li>受保护资源的 <strong>request matchers</strong>（默认为所有）。</li>
+<li>对受保护资源的访问规则（默认为<code>&quot;authenticated&quot;</code>）。</li>
+<li>在Spring Security中，由<code>HttpSecurity</code> configurer允许的受保护资源的其他定制。</li>
+</ul>
+<p><code>@EnableResourceServer</code>注解把一个<code>OAuth2AuthenticationProcessingFilter</code> 过滤器自动添加到Spring Security 过滤链中。</p>
+<p>在 XML中，有一个<code>id</code>属性的<code>&lt;resource-server/&gt;</code>元素， 这是一个servlet <code>Filter</code>的bean id，它可以被手动添加到标准的Spring Security链中。</p>
+<p>您的<code>ResourceServerTokenServices</code>是在OAuth协议中与授权服务器匹配的另一半。<br>如果资源服务器和授权服务器都在同一个应用程序中使用<code>DefaultTokenServices</code>那么你就不用太想这个了因为它实现了所有必要的接口所以它是自动一致的。如果你的资源服务器是一个单独的应用程序，你必须确保你匹配的授权服务器的功能和提供一个知道如何正确解码的令牌的<code>ResourceServerTokenServices</code>。与授权服务器一样，您通常可以使用<code>DefaultTokenServices</code>，并且选择主要通过<code>TokenStore</code>(后端存储或本地编码)来表达。另一种选择是<code>RemoteTokenServices</code>，它是一个Spring OAuth的功能（不是规范的一部分）。允许资源服务器通过授权服务器上的HTTP资源（<code>/oauth/check_token</code>）来解码令牌。如果资源服务器中没有大量的流量（每个请求都必须通过授权服务器进行验证），或者您能够搭建缓存，那么<code>RemoteTokenServices</code>是很方便的。 要使用<code>/oauth/check_token</code>断点，您需要在<code>AuthorizationServerSecurityConfigurer</code>中改变它的访问规则（默认是<code>&quot;denyAll()&quot;</code>）。如：<br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">configure</span><span class="params">(AuthorizationServerSecurityConfigurer oauthServer)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">	oauthServer.tokenKeyAccess(<span class="string">"isAnonymous() || hasAuthority('ROLE_TRUSTED_CLIENT')"</span>)</div><div class="line">	.checkTokenAccess(</div><div class="line">			<span class="string">"hasAuthority('ROLE_TRUSTED_CLIENT')"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在本例中，我们将配置<code>/oauth/check_token</code>端点和<code>/oauth/token_key</code>（因此可信的资源可以获得JWT验证的公共密钥）。这两个端点受到使用客户端凭证的<strong>HTTP Basic authentication</strong>来保护 。</p>
+<h3 id="配置一个OAuth-Aware的表达式处理程序"><a href="#配置一个OAuth-Aware的表达式处理程序" class="headerlink" title="配置一个OAuth-Aware的表达式处理程序"></a>配置一个OAuth-Aware的表达式处理程序</h3><p>你可能想要使用Spring Security的<a href="http://docs.spring.io/spring-security/site/docs/3.2.5.RELEASE/reference/htmlsingle/#el-access" target="_blank" rel="external">表达式语言配置访问控制</a>的优点。 表达式处理器在<code>@EnableResourceServer</code>配置中以默认方式进行注册。 表达式包括<em>#oauth2.clientHasRole</em>，<em>#oauth2.clientHasAnyRole</em>，和 <em>#oath2.denyClient</em>，这些可以提供基于oauth客户端角色的访问控制（详细列表见<code>OAuth2SecurityExpressionMethods</code>）。 在XML中，你可以在<code>&lt;http/&gt;</code> 安全配置节点内使用<code>expression-handler</code>元素注册一个oauth-aware表达式处理器。</p>
+</section>
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#OAuth2" >
+    <span class="tag-code">OAuth2</span>
+  </a>
+
+  <a href="/tags#Spring Security OAuth" >
+    <span class="tag-code">Spring Security OAuth</span>
+  </a>
+
+      </div>
+    
+    <!-- <div class="money-like">
+      <div class="reward-btn">
+        赏
+        <span class="money-code">
+          <span class="alipay-code">
+            <div class="code-image"></div>
+            <b>使用支付宝打赏</b>
+          </span>
+          <span class="wechat-code">
+            <div class="code-image"></div>
+            <b>使用微信打赏</b>
+          </span>
+        </span>
+      </div>
+      <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+    </div>
+    <div class="qrcode">
+      <canvas id="share-qrcode"></canvas>
+      <p class="notice">扫描二维码，分享此文章</p>
+    </div>
+    -->
+    
+      <div id="comments"></div>
+    
+  </article>
+</main>
+
+<script>
+  (function () {
+    var url = 'http://yoursite.com/2017/08/29/OAuth2开发者指南—服务端/';
+    $('#article-banner').geopattern(url)
+    $('.header').removeClass('fixed-header')
+
+     // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png') 
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      var imageW = $(this).width()
+      var imageH = $(this).height()
+      
+      var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+      zoom = zoom < 1 ? 1 : zoom
+      zoom = zoom > 2 ? 2 : zoom
+      var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+      $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+      $('.image-view-wrap').addClass('wrap-active')
+      $('.image-view-wrap img').css({
+        'width': `${imageW}`,
+        'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+      })
+      $('html').css('overflow', 'hidden')
+
+      $('.image-view-wrap').on('click', function() {
+        $(this).remove()
+        $('html').attr('style', '')
+      })
+    })
+
+    // qrcode
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+
+    // gitment
+    var gitmentConfig = "wcmolin";
+    if (gitmentConfig != "undefined") {
+      var gitment = new Gitment({
+        id: "OAuth2开发者指南—服务端",
+        owner: "wcmolin",
+        repo: "wcmolin.github.io",
+        oauth: {
+          client_id: "10033ec416be0c274e56",
+          client_secret: "40eccdbb3dd43ebd60d6601435da7f120aeb5557"
+        },
+        theme: {
+          render(state, instance) {
+            const container = document.createElement('div')
+            container.lang = "en-US"
+            container.className = 'gitment-container gitment-root-container'
+            container.appendChild(instance.renderHeader(state, instance))
+            container.appendChild(instance.renderEditor(state, instance))
+            container.appendChild(instance.renderComments(state, instance))
+            container.appendChild(instance.renderFooter(state, instance))
+            return container;
+          }
+        }
+      })
+      gitment.render(document.getElementById('comments'))
+    }
+  })();
+</script>
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2017 - 2018 
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span> 
+    <a href="/about/">Molin</a>
+    <br>
+    Powered by <a href="https://hexo.io" target="_blank">Hexo</a> |
+    Theme refer to <a href="https://github.com/yanm1ng/hexo-theme-vexo">Vexo</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine == 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="若要前行，就要离开你现在停留的地方">
+  <meta name="keyword" content="hexo-theme, vuejs">
+  <title>
+    
+      OAuth2基本概念和运作流程 | Let it be
+    
+  </title>
+  <link rel="shortcut icon" href="/css/images/fav.ico">
+  <link rel="icon" href="/css/images/fav.ico">
+  <link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/plugins/gitment.css">
+  <script src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdn.bootcss.com/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdn.bootcss.com/nprogress/0.2.0/nprogress.min.js"></script>
+  <script src="/js/qrious.js"></script>
+<script src="/js/gitment.js"></script>
+</head>
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>Let it be</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/project/" class="item-link">Projects</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/about/" class="item-link">About</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/project/" class="menu-link">Projects</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/about/" class="menu-link">About</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>OAuth2基本概念和运作流程</h2>
+  <p class="post-date">2017-08-28</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body">
+  <article class="post-article">
+    <section class="markdown-content"><p>OAuth（开放授权）是一个关于授权的开放标准，允许用户让第三方应用访问该用户在某一网站上存储的私密的资源（如照片，视频，联系人列表），而无需将用户名和密码提供给第三方应用。目前的版本是2.0版，本文将对OAuth2.0的一些基本概念和运行流程做一个简要介绍。主要参考<a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="external">RFC-6749</a>。</p>
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p>这里有两个典型的例子：</p>
+<ul>
+<li>比如你浏览某个网站的技术文章，发现其中某段介绍的不够详细，想留言给作者提问，点击<code>评论</code>，结果发现需要有这个网站的账号才能留言，此时有两个选择，一个是新注册一个此网站的账号，二是点击通过github快速登录。前者你觉得过于繁琐，直接点击了github登录，此时，OAuth的认证流程就开始了。通过引导跳转到github界面，会提示你是否授权该网站使用你的github用户信息，点击确认，跳转回原网站，发现已经使用你的github账号默认注册了一个用户，而且还不需要用户名和密码，便捷高效。</li>
+<li>假如有一个云冲印的网站，可以将你存储在Google的照片冲印出来，用户为了使用该服务，必须让云冲印读取Google上的照片。为了拿到照片，云冲印必须得拿到一个用户的授权，如何获取这个用户授权呢？传统方法是用户将用户名和密码告诉云冲印，那么云冲印就可以自由无限制的访问了（相当于用户自己访问），这样显然是不行的，有几个严重的缺点：<ul>
+<li>云冲印为了保存后续服务，会保存用户的密码，这样很不安全。</li>
+<li>云冲印拥有了获取用户存储在Google的所有资料的权力，用户没法限制云冲印得到的授权范围和授权有效期。</li>
+<li>用户只有修改密码，才能收回赋予云冲印的权力，但是如果还授权给了其他的应用，那么密码的修改将影响到所有被授权应用。</li>
+<li>只要有一个第三方应用程序被破解，就会导致用户密码泄漏，以及所有被密码保护的数据泄漏。（例子来自阮一峰-理解OAuth2.0）</li>
+</ul>
+</li>
+</ul>
+<p>可以看出，OAuth就是为解决如上例子而诞生的。</p>
+<h3 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h3><p>以下几个名词至关重要：</p>
+<ul>
+<li><code>Resource Owner</code>：资源所有者。即用户。</li>
+<li><code>Client</code>：客户端（第三方应用）。如云冲印。</li>
+<li><code>HTTP service</code>：HTTP服务提供商，简称服务提供商。如上文提到的github或者Google。</li>
+<li><code>User Agent</code>：用户代理。本文中就是指浏览器。</li>
+<li><code>Authorization server</code>：授权（认证）服务器。即服务提供商专门用来处理认证的服务器。</li>
+<li><code>Resource server</code>：资源服务器，即服务提供商存放用户生成的资源的服务器。它与认证服务器，可以是同一台服务器，也可以是不同的服务器。</li>
+<li><code>Access Token</code>：访问令牌。使用合法的访问令牌获取受保护的资源。</li>
+</ul>
+<h3 id="运行流程"><a href="#运行流程" class="headerlink" title="运行流程"></a>运行流程</h3><p><img src="http://image.beekka.com/blog/2014/bg2014051203.png" alt="运行流程"></p>
+<ul>
+<li>（A）客户端向资源所有者请求授权。授权请求可以直接对资源所有者(如图所示)进行，或者通过授权服务器作为中介进行间接访问（首选方案）。</li>
+<li>（B）资源所有者允许授权，并返回凭证（如<code>code</code>）。</li>
+<li>（C）客户端通过授权服务器进行身份验证，并提供授权凭证（如<code>code</code>），请求访问令牌（<code>access token</code>）。</li>
+<li>（D）授权服务器对客户端进行身份验证，并验证授权凭证，如果有效，则发出访问令牌。</li>
+<li>（E）客户端向资源服务器请求受保护的资源，并通过提供访问令牌来进行身份验证。</li>
+<li>（F）资源服务器验证访问令牌，如果正确则返回受保护资源。</li>
+</ul>
+<h3 id="授权"><a href="#授权" class="headerlink" title="授权"></a>授权</h3><p>从运行流程不难看出，要获取<code>access token</code>必须先得到用户授权（<code>authorzation grant</code>），那么如果获取这么用户授权呢？OAuth 2.0定义了四种类型的授权类型：</p>
+<ul>
+<li>授权码模式（<code>authorization code</code>）</li>
+<li>简化模式（<code>implicit</code>）</li>
+<li>密码模式（<code>resource owner password credentials</code>）</li>
+<li>客户端模式（<code>client credentials</code>）</li>
+</ul>
+<h4 id="授权码模式（authorization-code）"><a href="#授权码模式（authorization-code）" class="headerlink" title="授权码模式（authorization code）"></a>授权码模式（<code>authorization code</code>）</h4><p>授权码模式是功能最完整、使用最广泛、流程最严密的授权模式。</p>
+<p>由于这是一个基于重定向的流，所以客户端必须能够与资源所有者的用户代理(通常是web浏览器)进行交互，并且能够从授权服务器接收传入的请求(通过重定向)。<br><img src="http://image.beekka.com/blog/2014/bg2014051204.png" alt="授权码模式"></p>
+<ul>
+<li>（A）用户访问客户端，客户端将用户导向授权服务器，通过用户代理（<code>User-Agent</code>）发送包括它的客户端标识符、请求的范围、本地状态和一个重定向URI，授权服务器在授予(或拒绝)访问权后将其发送给用户代理。</li>
+<li>（B）授权服务器对资源所有者进行身份验证(通过用户代理)，并确定资源所有者是否授予或拒绝客户端的访问请求。</li>
+<li>（C）假如资源所有者同意授权请求，那么授权服务器将会使用前面提供的或者事先指定的重定向URI（<code>redirection URI</code>），重定向到客户端，并附上一个授权码（<code>code</code>）和一个前面提供的本地状态（<code>state</code>）（如果有的话，则会原值返回）。</li>
+<li>（D）客户端收到授权码，附上早先的<code>重定向URI</code>，向授权服务器申请令牌。这一步是在客户端的后台的服务器上完成的，对用户不可见。在发出请求时，授权服务器对客户端进行身份验证。请求参数包含授权代码、用于获得验证的授权代码的重定向URI、标识客户端身份的<code>client id</code>和<code>client secret</code>。</li>
+<li>（E）授权服务器对客户端进行身份验证，验证授权代码，并确保所收到的重定向URI与用于在步骤(C)中对客户端重定向的URI相匹配，如果有效，授权服务器将发送访问令牌<code>access token</code>和刷新令牌<code>refresh token</code>（可选）。</li>
+</ul>
+<p>接着来介绍下各个步骤所需的参数</p>
+<p>对于步骤A，客户端申请授权请求的URI，包含以下参数：</p>
+<ul>
+<li><code>response_type</code>授权类型。必选项，其值固定为<code>code</code>。</li>
+<li><code>client_id</code>客户端id。必选项，用于标识授权服务器中已注册的客户端。</li>
+<li><code>redirect_uri</code>重定向URI。可选项，如果不填写则使用注册在授权服务器端与client_id对应的redirect_uri。</li>
+<li><code>scope</code>申请的权限范围，如<code>read</code>或<code>write</code>。可选项，如果申请的请求访问超出授权服务器定义的可操作范围则会失败。</li>
+<li><code>state</code>表示客户端当前状态。可选项，可以指定任意值，授权服务器会原封不动地返回这个值。</li>
+</ul>
+<p>eg：<br><figure class="highlight perl"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">GET /authorize?response_type=code&amp;client_id=s6BhdRkqt3&amp;<span class="keyword">state</span>=xyz</div><div class="line">        &amp;redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/<span class="number">1.1</span></div><div class="line">Host: server.example.com</div></pre></td></tr></table></figure></p>
+<p>C步骤中，服务器回应客户端的URI，包含以下参数：</p>
+<ul>
+<li><code>code</code>授权码。必选项，授权码必须在颁发后很快过期以减小泄露风险，建议最长时间设为10分钟，客户端只能使用该码一次，否则会被授权服务器拒绝。该码与<code>client id</code>和重定向URI，是一一对应关系。</li>
+<li><code>state</code>如果客户端的请求中包含这个参数，认证服务器的回应也必须一模一样包含这个参数。</li>
+</ul>
+<p>eg：<br><figure class="highlight pf"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">HTTP/<span class="number">1.1</span> <span class="number">302</span> Found</div><div class="line">Location: https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA</div><div class="line">          &amp;<span class="keyword">state</span>=xyz</div></pre></td></tr></table></figure></p>
+<p>D步骤中，客户端向认证服务器申请令牌的HTTP请求，包含以下参数：</p>
+<ul>
+<li><code>grant_type</code>许可类型（授权模式）。必选项，此处固定值为<code>authorization_code</code>。</li>
+<li><code>code</code>上一步获得的授权码。必选项。</li>
+<li><code>redirect_uri</code>表示重定向URI。必选项，且必须与A步骤中的该参数值保持一致。</li>
+<li><code>client_id</code>表示客户端ID，必选项。</li>
+</ul>
+<p>eg：<br><figure class="highlight http"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">POST</span> <span class="string">/token</span> HTTP/1.1</div><div class="line"><span class="attribute">Host</span>: server.example.com</div><div class="line"><span class="attribute">Authorization</span>: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW</div><div class="line"><span class="attribute">Content-Type</span>: application/x-www-form-urlencoded</div><div class="line"></div><div class="line"><span class="llvm">grant_type=authorization_code&amp;code=SplxlOBeZQQYbYS<span class="number">6</span>WxSbIA</span></div><div class="line">&amp;redirect_uri=https<span class="symbol">%3</span>A<span class="symbol">%2</span>F<span class="symbol">%2</span>Fclient<span class="symbol">%2</span>Eexample<span class="symbol">%2</span>Ecom<span class="symbol">%2</span>Fcb</div></pre></td></tr></table></figure></p>
+<p>E步骤中，认证服务器发送的HTTP回复，包含以下参数：</p>
+<ul>
+<li><code>access_token</code>表示访问令牌。必选项。</li>
+<li><code>token_type</code>表示令牌类型。该值大小写不敏感，必选项，可以是bearer类型或mac类型。</li>
+<li><code>expires_in</code>表示过期时间，单位为秒。如果省略该参数，必须其他方式设置过期时间。</li>
+<li><code>refresh_token</code>表示更新令牌。可选项，用来获取下一次的访问令牌。</li>
+<li><code>scope</code>表示权限范围。可选项，如果与客户端申请的范围一致，此项可省略。</li>
+</ul>
+<p>eg：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">HTTP/1.1 200 OK</div><div class="line">Content-Type: application/json;charset=UTF-8</div><div class="line"><span class="keyword">Cache</span>-Control: <span class="keyword">no</span>-<span class="keyword">store</span></div><div class="line"><span class="keyword">Pragma</span>: <span class="keyword">no</span>-<span class="keyword">cache</span></div><div class="line">&#123;</div><div class="line">   <span class="string">"access_token"</span>:<span class="string">"2YotnFZFEjr1zCsicMWpAA"</span>,</div><div class="line">   <span class="string">"token_type"</span>:<span class="string">"example"</span>,</div><div class="line">   <span class="string">"expires_in"</span>:<span class="number">3600</span>,</div><div class="line">   <span class="string">"refresh_token"</span>:<span class="string">"tGzv3JOkF0XG5Qx2TlKWIA"</span>,</div><div class="line">   <span class="string">"example_parameter"</span>:<span class="string">"example_value"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="简化模式（implicit）"><a href="#简化模式（implicit）" class="headerlink" title="简化模式（implicit）"></a>简化模式（<code>implicit</code>）</h4><p>简化模式（implicit grant type）不通过第三方应用程序的服务器，直接在浏览器中向认证服务器申请令牌，跳过了”授权码”这个步骤，因此得名。所有步骤在浏览器中完成，令牌对访问者是可见的，且客户端不需要认证。具体步骤可参阅<a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="external">RFC6749</a> 4.2节。</p>
+<h4 id="密码模式（resource-owner-password-credentials）"><a href="#密码模式（resource-owner-password-credentials）" class="headerlink" title="密码模式（resource owner password credentials）"></a>密码模式（<code>resource owner password credentials</code>）</h4><p>密码模式中，用户向客户端提供自己的用户名和密码。客户端使用这些信息，向”服务商提供商”索要授权。<br>在这种模式中，用户必须把自己的密码给客户端，但是客户端不得储存密码。这通常用在用户对客户端高度信任的情况下，比如客户端是操作系统的一部分，或者由一个著名公司出品。而认证服务器只有在其他授权模式无法执行的情况下，才能考虑使用这种模式。可参阅<a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="external">RFC6749</a> 4.3节。</p>
+<h4 id="客户端模式（client-credentials）"><a href="#客户端模式（client-credentials）" class="headerlink" title="客户端模式（client credentials）"></a>客户端模式（<code>client credentials</code>）</h4><p>客户端模式（Client Credentials Grant）指客户端以自己的名义，而不是以用户的名义，向”服务提供商”进行认证。严格地说，客户端模式并不属于OAuth框架所要解决的问题。在这种模式中，用户直接向客户端注册，客户端以自己的名义要求”服务提供商”提供服务，其实不存在授权问题。可参阅<a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="external">RFC6749</a> 4.4节。</p>
+<h3 id="基于Github登录的授权码模式例子"><a href="#基于Github登录的授权码模式例子" class="headerlink" title="基于Github登录的授权码模式例子"></a>基于Github登录的授权码模式例子</h3><p>前文提到了一个Github登录留言的例子，假设我们要使用OAuth2.0协议搭建一个网站，利用Github作为授权和资源服务器，实现第三方登录功能。<br>（<a href="http://www.barretlee.com/blog/2016/01/10/oauth2-introduce/" target="_blank" rel="external">转载</a>）现概况一下主要流程：</p>
+<h4 id="1）-网站和Github之间的协商"><a href="#1）-网站和Github之间的协商" class="headerlink" title="1） 网站和Github之间的协商"></a>1） 网站和Github之间的协商</h4><p>Github会对用户的权限做分类比如读取仓库信息的权限、写入仓库的权限、读取用户信息的权限、修改用户信息的权限等等。如果我想获取用户的信息，Github会要求我，先在它的平台上注册一个应用，在申请的时候标明需要获取用户信息的哪些权限，并且在申请的时候填写你的网站域名，Github只允许在这个域名中获取用户信息。</p>
+<p>此时我的网站已经和Github之间达成了共识，Github也给我发了两张门票，一张门票叫做<code>Client Id</code>，另一张门票叫做<code>Client Secret</code>。</p>
+<h4 id="2）用户和Github之间的协商"><a href="#2）用户和Github之间的协商" class="headerlink" title="2）用户和Github之间的协商"></a>2）用户和Github之间的协商</h4><p>用户进入我的网站，点击github登录按钮的时候，我的网站会将Github给我的<code>Client Id</code>交给用户，让他进入Github授权界面，如果此时用户没有登录，Github会提示登录（当然这不是OAuth2.0客户端部分应该关注的）。假设用户已经登录Github，那么Github看到用户手中的门票，就知道是我的网站让他过来的，于是就把我的网站获取的权限摆出来，并询问用户是否允许网站获取这些权限。<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 用户登录 github，协商</span></div><div class="line">GET <span class="comment">//github.com/login/oauth/authorize</span></div><div class="line"><span class="comment">// 协商凭证</span></div><div class="line">params = &#123;</div><div class="line"><span class="symbol">  client_id:</span> <span class="string">"xxxx"</span>,</div><div class="line"><span class="symbol">  redirect_uri:</span> <span class="string">"http://my-website.com"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果用户同意，在授权页面点击了确认授权后，页面会跳转到我预先设定的 <code>redirect_uri</code>并附带一个盖了章的门票<code>code</code>。<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 协商成功后带着盖了章的 code</span></div><div class="line"><span class="string">Location:</span> <span class="string">http:</span><span class="comment">//my-website.com?code=xxx</span></div></pre></td></tr></table></figure></p>
+<p>这个时候，用户和 Github 之间的协商就已经完成，Github 也会在自己的系统中记录这次协商，表示该用户已经允许在我的网站访问上直接操作和使用他的部分资源。</p>
+<h4 id="3）告诉Github我的网站要来访问"><a href="#3）告诉Github我的网站要来访问" class="headerlink" title="3）告诉Github我的网站要来访问"></a>3）告诉Github我的网站要来访问</h4><p>第二步中，我们已经拿到了盖过章的门票<code>code</code>，但这个<code>code</code> 只能表明，用户允许我的网站从github上获取该用户的数据，如果我直接拿这个<code>code</code>去github访问数据一定会被拒绝，因为任何人都可以持有<code>code</code>，github并不知道<code>code</code>持有方就是我本人。</p>
+<p>还记得之前申请应用的时候github给我的两张门票么，<code>Client Id</code>在上一步中已经用过了，接下来轮到另一张门票<code>Client Secret</code>。<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 网站和 github 之间的协商</span></div><div class="line">POST <span class="comment">//github.com/login/oauth/access_token</span></div><div class="line"><span class="comment">// 协商凭证包括 github 给用户盖的章和 github 发给我的门票</span></div><div class="line">params = &#123;</div><div class="line"><span class="symbol">  code:</span> <span class="string">"xxx"</span>,</div><div class="line"><span class="symbol">  client_id:</span> <span class="string">"xxx"</span>,</div><div class="line"><span class="symbol">  client_secret:</span> <span class="string">"xxx"</span>,</div><div class="line"><span class="symbol">  redirect_uri:</span> <span class="string">"http://my-website.com"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>拿着用户盖过章的<code>code</code>和能够标识个人身份的<code>client_id</code>、<code>client_secret</code>去拜访 github，拿到最后的绿卡<code>access_token</code>。<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 拿到最后的绿卡</span></div><div class="line">response = &#123;</div><div class="line"><span class="symbol">  access_token:</span> <span class="string">"e72e16c7e42f292c6912e7710c838347ae178b4a"</span></div><div class="line"><span class="symbol">  scope:</span> <span class="string">"user,gist"</span></div><div class="line"><span class="symbol">  token_type:</span> <span class="string">"bearer"</span>,</div><div class="line"><span class="symbol">  refresh_token:</span> <span class="string">"xxxx"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="4）用户开始使用Github账号在我的网站上留言"><a href="#4）用户开始使用Github账号在我的网站上留言" class="headerlink" title="4）用户开始使用Github账号在我的网站上留言"></a>4）用户开始使用Github账号在我的网站上留言</h4><figure class="highlight llvm"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">// 访问用户数据</div><div class="line">GET //api.github.com/user?access_token=e<span class="number">72e16</span><span class="keyword">c</span><span class="number">7e42</span>f<span class="number">292</span><span class="keyword">c</span><span class="number">6912e7710</span><span class="keyword">c</span><span class="number">838347</span>ae<span class="number">178</span>b<span class="number">4</span>a</div></pre></td></tr></table></figure>
+<p>上一步github已经把最后的绿卡<code>access_token</code>给我了，通过github提供的 API 加绿卡就能够访问用户的信息了，能获取用户的哪些权限在<code>response</code> 中也给了明确的说明，<code>scope</code>为<code>user</code>和<code>gist</code>，也就是只能获取<code>user</code>组和<code>gist</code>组两个小组的权限，<code>user</code>组中就包含了用户的名字和邮箱等信息了。<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 告诉我用户的名字和邮箱</span></div><div class="line">response = &#123;</div><div class="line"><span class="symbol">  username:</span> <span class="string">"barretlee"</span>,</div><div class="line"><span class="symbol">  email:</span> <span class="string">"barret.china@gmail.com"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>本文到此结束，介绍的整个流程比较简陋，具体细节还是阅读<a href="https://tools.ietf.org/html/rfc6749" target="_blank" rel="external">RFC6749</a> 。</p>
+</blockquote>
+</section>
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#OAuth2" >
+    <span class="tag-code">OAuth2</span>
+  </a>
+
+      </div>
+    
+    <!-- <div class="money-like">
+      <div class="reward-btn">
+        赏
+        <span class="money-code">
+          <span class="alipay-code">
+            <div class="code-image"></div>
+            <b>使用支付宝打赏</b>
+          </span>
+          <span class="wechat-code">
+            <div class="code-image"></div>
+            <b>使用微信打赏</b>
+          </span>
+        </span>
+      </div>
+      <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+    </div>
+    <div class="qrcode">
+      <canvas id="share-qrcode"></canvas>
+      <p class="notice">扫描二维码，分享此文章</p>
+    </div>
+    -->
+    
+      <div id="comments"></div>
+    
+  </article>
+</main>
+
+<script>
+  (function () {
+    var url = 'http://yoursite.com/2017/08/28/OAuth2基本概念和运作流程/';
+    $('#article-banner').geopattern(url)
+    $('.header').removeClass('fixed-header')
+
+     // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png') 
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      var imageW = $(this).width()
+      var imageH = $(this).height()
+      
+      var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+      zoom = zoom < 1 ? 1 : zoom
+      zoom = zoom > 2 ? 2 : zoom
+      var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+      $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+      $('.image-view-wrap').addClass('wrap-active')
+      $('.image-view-wrap img').css({
+        'width': `${imageW}`,
+        'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+      })
+      $('html').css('overflow', 'hidden')
+
+      $('.image-view-wrap').on('click', function() {
+        $(this).remove()
+        $('html').attr('style', '')
+      })
+    })
+
+    // qrcode
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+
+    // gitment
+    var gitmentConfig = "wcmolin";
+    if (gitmentConfig != "undefined") {
+      var gitment = new Gitment({
+        id: "OAuth2基本概念和运作流程",
+        owner: "wcmolin",
+        repo: "wcmolin.github.io",
+        oauth: {
+          client_id: "10033ec416be0c274e56",
+          client_secret: "40eccdbb3dd43ebd60d6601435da7f120aeb5557"
+        },
+        theme: {
+          render(state, instance) {
+            const container = document.createElement('div')
+            container.lang = "en-US"
+            container.className = 'gitment-container gitment-root-container'
+            container.appendChild(instance.renderHeader(state, instance))
+            container.appendChild(instance.renderEditor(state, instance))
+            container.appendChild(instance.renderComments(state, instance))
+            container.appendChild(instance.renderFooter(state, instance))
+            return container;
+          }
+        }
+      })
+      gitment.render(document.getElementById('comments'))
+    }
+  })();
+</script>
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2017 - 2018 
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span> 
+    <a href="/about/">Molin</a>
+    <br>
+    Powered by <a href="https://hexo.io" target="_blank">Hexo</a> |
+    Theme refer to <a href="https://github.com/yanm1ng/hexo-theme-vexo">Vexo</a>
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine == 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+  </body>
+</html>

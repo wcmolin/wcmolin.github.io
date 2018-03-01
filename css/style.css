@@ -513,7 +513,7 @@ h2.article-head {
 .markdown-content p code,
 .article-summary p code {
   background-color: #f8f8f8;
-  color: #e96900;
+  color: #305cb5;
   padding: 3px 5px;
   margin: 0 2px;
   border-radius: 2px;
@@ -573,6 +573,17 @@ h2.article-head {
 .markdown-content ol li,
 .article-summary ol li {
   padding: 5px 0;
+}
+.markdown-content ul li code,
+.article-summary ul li code,
+.markdown-content ol li code,
+.article-summary ol li code {
+  background-color: #f8f8f8;
+  color: #d14;
+  padding: 3px 5px;
+  margin: 0 2px;
+  border-radius: 2px;
+  white-space: nowrap;
 }
 .markdown-content img,
 .article-summary img {
